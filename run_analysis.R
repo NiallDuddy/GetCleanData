@@ -1,0 +1,78 @@
+## Checks for the dataset and if it does not exist, downloads and extracts the filea.
+
+dir <- "UCI HAR Dataset"
+if (!file.exists(dir)) {
+	temp <- tempdir()
+	url <- "http://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
+	file <- basename(url)
+	download.file(url, file)
+	unzip(file)
+	unlink(temp)
+}
+
+## Filepaths of the files are set.
+
+testSet <- paste(dir, "/test/X_test.txt", sep = "")
+testLabel <- paste(dir, "/test/y_test.txt", sep = "")
+testSubject <- paste(dir, "/test/subject_test.txt", sep = "")
+trainSet <- paste(dir, "/train/X_train.txt", sep = "")
+trainLabel <- paste(dir, "/train/y_train.txt", sep = "")
+trainSubject <- paste(dir, "/train/subject_train.txt", sep = "")
+features <- paste(dir, "/features.txt", sep = "")
+activityLabel <- paste(dir, "/activity_labels.txt", sep = "")
+
+## Files are read to separate dataframes.
+
+testSet <- read.table(testSet, header=F)
+testLabel <- read.table(testLabel, header=F)
+testSubject <- read.table(testSubject, header=F)
+trainSet <- read.table(trainSet, header=F)
+trainLabel <- read.table(trainLabel, header=F)
+trainSubject <- read.table(trainSubject, header=F)
+features <- read.table(features, header=F)
+activityLabel <- read.table(activityLabel, header=F)
+
+## The test dataset is prepared with appropriate descriptive variable names and activity names, 
+## all of which are generated from the label, subject, features and activityLabel Files.
+
+testLabelDesc <- as.character(testLabel[1])
+for (i in 1:nrow(testLabel)) {
+	testLabelDesc[i] <- as.character(activityLabel[testLabel[i, 1], 2])
+}
+colnames(testSet) <- features[[2]]
+testSet <- cbind(testSubject[1], testLabelDesc, testSet)
+colnames(testSet)[1] <- "subjectID"
+colnames(testSet)[2] <- "activity"
+
+## The train dataset is prepared with appropriate descriptive variable names and activity names, 
+## all of which are generated from the label, subject, features and activityLabel Files.
+
+trainLabelDesc <- as.character(trainLabel[1])
+for (i in 1:nrow(trainLabel)) {
+	trainLabelDesc[i] <- as.character(activityLabel[trainLabel[i, 1], 2])
+}
+colnames(trainSet) <- features[[2]]
+trainSet <- cbind(trainSubject[1], trainLabelDesc, trainSet)
+colnames(trainSet)[1] <- "subjectID"
+colnames(trainSet)[2] <- "activity"
+
+## Merges the training and the test sets to create one data set.
+
+dataSet <- rbind(trainSet, testSet)
+
+## Extracts only the measurements on the mean and standard deviation for each measurement. 
+
+index = grep(".*mean\\(\\)|.*std\\(\\)", names(dataSet))
+dataSet2 <- dataSet[ , index]
+dataSet2 <- cbind(dataSet[1:2], dataSet2)
+write.table(dataSet2, "dataSet2.txt", row.name=F)
+
+## From the data set in step 4, creates a second, independent tidy data set with the 
+## average of each variable for each activity and each subject.
+
+library(data.table)
+dataSet3 <- data.table(dataSet2)
+dataSet3 <- dataSet3[,lapply(.SD, mean),by=c("subjectID", "activity")]
+write.table(dataSet3, "dataSet3.txt", row.name=F)
+
+
