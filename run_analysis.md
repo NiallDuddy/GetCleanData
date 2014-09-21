@@ -76,21 +76,14 @@ Extracts only the measurements on the mean and standard deviation for each measu
 index = grep(".*mean\\(\\)|.*std\\(\\)", names(dataSet))
 dataSet2 <- dataSet[ , index]
 dataSet2 <- cbind(dataSet[1:2], dataSet2)
-write.table(dataSet2, "dataSet2.txt")
+write.table(dataSet2, "dataSet2.txt", row.names=F)
 ```
 From the data set in step 4, creates a second, independent tidy data set with the 
 average of each variable for each activity and each subject.
 
 ```r
 library(data.table)
-```
-
-```
-## data.table 1.9.2  For help type: help("data.table")
-```
-
-```r
 dataSet3 <- data.table(dataSet2)
 dataSet3 <- dataSet3[,lapply(.SD, mean),by=c("subjectID", "activity")]
-write.table(dataSet3, "dataSet3.txt")
+write.table(dataSet3, "dataSet3.txt", row.names=F)
 ```

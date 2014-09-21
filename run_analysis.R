@@ -73,6 +73,6 @@ write.table(dataSet2, "dataSet2.txt", row.name=F)
 library(data.table)
 dataSet3 <- data.table(dataSet2)
 dataSet3 <- dataSet3[,lapply(.SD, mean),by=c("subjectID", "activity")]
-write.table(dataSet3, "dataSet3.txt", row.name=F)
+write.table(dataSet3, "tidy_data.txt", row.name=F)
 
 
